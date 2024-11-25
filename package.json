@@ -1,0 +1,16 @@
+{
+  "name": "futureacademy1",
+  "version": "1.0.0",
+  "description": "Webstore for after school classes VUE # Website link https://kabeer62.github.io/FutureAcademy1/ ## Commit 1 - CSS ## Commit 2 - Navigation ## Commit 3 - Subjects ## Commit 4 - Courses Page ## Commit 5 - AddToCart ## Commit 6 - Cart Section ## Commit 7 - Cart Section with Product ## Commit 8 - Form Section ## Commit 9 - Search Function ## Commit 10 - Sort Function ## Commit 11 - Hiding Btns (Cart, PlaceOrder) before adding the product or empty fields ## Commit 12 - HTML And CSS Changes For Mobile",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.1",
+    "mongodb": "^3.6.3"
+  }
+}
