@@ -2,14 +2,26 @@
 const express = require('express');
 const Collection = require('mongodb/lib/collection');
 const { checkCollectionName } = require('mongodb/lib/utils');
+const path=require('path')
 // const bodyParser = require('body-parser')
 
 //Create an Express.js instance:
-const app = express()
+var app = express()
 
-//config Express.js
+// config Express.js
 app.use(express.json())
-app.set('port', 3000)
+app.set('port', 3001)
+
+var imagePath = path.resolve(__dirname, "images");
+
+app.use('/images', express.static(imagePath));
+
+app.use(function(request, response, next) {
+    response.writeHead(200, { "Content-Type": "text/plain" })
+    response.end("Could not process(did not find static file)")
+});
+
+
 app.use((req,res,next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader("Access-Control-Allow-Credentials", "true");
