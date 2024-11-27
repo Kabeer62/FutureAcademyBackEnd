@@ -1,99 +1,70 @@
-//Import dependencies modules:
+// Import dependencies:
 const express = require('express');
-const Collection = require('mongodb/lib/collection');
-const { checkCollectionName } = require('mongodb/lib/utils');
-const path=require('path')
-// const bodyParser = require('body-parser')
+const MongoClient = require('mongodb').MongoClient;
+const ObjectID = require('mongodb').ObjectID;
+const path = require('path');
 
-//Create an Express.js instance:
-var app = express()
+// Create an Express.js instance:
+var app = express();
 
-// config Express.js
-app.use(express.json())
-app.set('port', 3001)
+// Config Express.js
+app.use(express.json());
+app.set('port', 3001);
 
+// Serve static files (images) from the 'images' folder
 var imagePath = path.resolve(__dirname, "images");
-
 app.use('/images', express.static(imagePath));
 
-app.use(function(request, response, next) {
-    response.writeHead(200, { "Content-Type": "text/plain" })
-    response.end("Could not process(did not find static file)")
-});
-
-
-app.use((req,res,next) => {
+// CORS middleware
+app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader("Access-Control-Allow-Credentials", "true");
     res.setHeader("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
     res.setHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers");
-
     next();
-})
+});
 
-//connect to mongodb
-const MongoClient = require('mongodb').MongoClient;
-
+// MongoDB connection
 let db;
-//Mongo Client.connect('mongodb+srv://MyMongoDBUser:wednesday@cluster0.epqbr.mongodb.net', )
-MongoClient.connect('mongodb+srv://kabeerkumar577:9510Kabeer@cst2120.ppvcmnk.mongodb.net/', (err, client) =>{
+MongoClient.connect('mongodb+srv://kabeerkumar577:9510Kabeer@cst2120.ppvcmnk.mongodb.net/', (err, client) => {
+    if (err) {
+        console.error("Failed to connect to MongoDB:", err);
+        process.exit(1);
+    }
+    db = client.db('webstore');
+    console.log("Connected to MongoDB");
+});
 
-db = client.db('webstore')
-})
+// Default route
+app.get('/', (req, res, next) => {
+    res.send('Welcome to the API! Use /products to fetch product details.');
+});
 
-app.get('/', (req, res, next) =>{
-    res.send('Select a collection, e.g., /collection/messages')
-})
+// Fetch all products
+app.get('/products', async (req, res) => {
+    try {
+        const products = await db.collection('products').find().toArray(); // 'products' is the collection name
+        res.json(products);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch products' });
+    }
+});
 
-app.param('collectionName', (req, res, next, collectionName) => {
-    req.collection = db.collection(collectionName)
-    //console.log('collection name:', req.collection) 
-    return next()
+// Fetch a specific product by ID
+app.get('/products/:id', async (req, res) => {
+    try {
+        const product = await db.collection('products').findOne({ _id: new ObjectID(req.params.id) });
+        if (!product) {
+            return res.status(404).json({ error: 'Product not found' });
+        }
+        res.json(product);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch product' });
+    }
+});
 
-})
-
-app.get('/collection/:collectionName', (req, res, next) => {
-    req.collection.find({}).toArray((e, results) => {
-        if (e) return next(e)
-        res.send(results)
-    })
-})
-
-app.post('/collection/:collectionName', (req, res, next) => {
-    req.collection.insert(req.body, (e, results) =>{
-        if(e) return next(e)
-        res.send(results.ops)
-    })
-})
-
-const ObjectID = require('mongodb').ObjectID;
-app.get('/collection/:collectionName/:id', (req, res, next)=>{
-    req.collection.findOne({ _id: new ObjectID(req.params.id) }, (e, result) =>{
-        if (e) return next (e)
-        res.send(result)
-    })
-})
-
-app.put('/collection/:collectionName/:id', (req, res, next) => {
-    req.collection.update({ _id: new ObjectID(req.params.id) }, { $set: req.body }, { safe: true, multi: false },
-        (e, result) => {
-            if (e) return next(e)
-            res.send((result.result.n === 1) ? { msg: 'success' } : { msg: 'error' })
-        })
-})
-
-app.delete('/collection/:collectionName/:id', (req, res, next) => {
-    req.collection.deleteOne({
-        _id: ObjectID(req.params.id)},
-        (e, result) =>{
-            if (e) return next(e)
-            res.send((result.result.n === 1) ? {msg: 'success'} : {msg: 'error'})
-        })
-})
-
-// app.listen(3000, () =>{
-//     console.log('Express.js server running at localhost:3000');
-// })
-
-const port = process.env.PORT || 3000
-app.listen(port)
+// Start the server
+const port = process.env.PORT || 3000;
+// app.listen(port, () => {
+//     console.log(`Server running at http://localhost:${port}`);
+// });
