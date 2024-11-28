@@ -2,8 +2,10 @@ const express = require('express');
 const MongoClient = require('mongodb').MongoClient;
 const ObjectID = require('mongodb').ObjectID;
 const path = require('path');
+const cors = require('cors');
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 app.set('port', 3000);
 
@@ -91,7 +93,7 @@ app.delete('/collection/:collectionName/:id', (req, res, next) => {
 });
 
 // Serve static content from back-end server
-app.use("/static", express.static(imagePath));
+app.use("/images", express.static(imagePath));
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
