@@ -53,16 +53,7 @@ app.param('collectionName', (req, res, next, collectionName) => {
 app.get('/collection/:collectionName', (req, res, next) => {
     req.collection.find({}).toArray((e, results) => {
         if (e) return next(e);
-
-        // Add full URL to image paths
-        const updatedResults = results.map(product => {
-            if (product.image) {
-                product.image = `https://futureacademybackend.onrender.com/${product.image}`;
-            }
-            return product;
-        });
-
-        res.send(updatedResults);
+        res.send(results);
     });
 });
 
