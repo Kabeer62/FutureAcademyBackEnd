@@ -10,7 +10,7 @@ var app = express()
 
 // config Express.js
 app.use(express.json())
-app.set('port', 3001)
+app.set('port', 3000)
 
 var imagePath = path.resolve(__dirname, "images");
 
