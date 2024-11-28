@@ -90,6 +90,9 @@ app.delete('/collection/:collectionName/:id', (req, res, next) => {
     });
 });
 
+// Serve static content from back-end server
+app.use("/static", express.static(imagePath));
+
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
     console.log(`Express.js server running at localhost:${port}`);
