@@ -51,16 +51,19 @@ app.param('collectionName', (req, res, next, collectionName) => {
 });
 
 app.get('/collection/:collectionName', (req, res, next) => {
-    const sortBy = req.query.sortBy || 'title';
-    const sortOrder = req.query.sortOrder === 'desc' ? -1 : 1;
+    req.collection.find({}).toArray((e, results) => {
+        if (e) return next(e);
 
-    req.collection
-        .find({})
-        .sort({ [sortBy]: sortOrder })
-        .toArray((e, results) => {
-            if (e) return next(e);
-            res.send(results);
+        // Add full URL to image paths
+        const updatedResults = results.map(product => {
+            if (product.image) {
+                product.image = `https://futureacademybackend.onrender.com/${product.image}`;
+            }
+            return product;
         });
+
+        res.send(updatedResults);
+    });
 });
 
 app.post('/collection/:collectionName', (req, res, next) => {
