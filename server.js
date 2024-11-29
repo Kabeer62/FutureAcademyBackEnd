@@ -23,6 +23,7 @@ var imagePath = path.resolve(__dirname, "images");
 app.use('/images', express.static(imagePath));
 
 let db;
+
 // Connect to MongoDB
 MongoClient.connect('mongodb+srv://kabeerkumar577:9510Kabeer@cst2120.ppvcmnk.mongodb.net/webstore', (err, client) => {
     if (err) {
@@ -59,13 +60,6 @@ app.get('/collection/:collectionName', (req, res, next) => {
     });
 });
 
-app.post('/collection/:collectionName', (req, res, next) => {
-    req.collection.insertOne(req.body, (e, result) => {
-        if (e) return next(e);
-        res.send(result.ops);
-    });
-});
-
 app.get('/collection/:collectionName/:id', (req, res, next) => {
     req.collection.findOne({ _id: new ObjectID(req.params.id) }, (e, result) => {
         if (e) return next(e);
@@ -73,6 +67,27 @@ app.get('/collection/:collectionName/:id', (req, res, next) => {
     });
 });
 
+// Updated POST route to prevent duplicate entries based on 'id'
+app.post('/collection/:collectionName', (req, res, next) => {
+    const newItem = req.body;
+
+    // Check if an item with the same 'id' already exists
+    req.collection.findOne({ id: newItem.id }, (err, existingItem) => {
+        if (err) return next(err);
+
+        if (existingItem) {
+            return res.status(400).send({ msg: 'Item with this ID already exists' });
+        }
+
+        // If no duplicate, insert the new item
+        req.collection.insertOne(newItem, (e, result) => {
+            if (e) return next(e);
+            res.send(result.ops);
+        });
+    });
+});
+
+// PUT method to update a product (by its 'id')
 app.put('/collection/:collectionName/:id', (req, res, next) => {
     req.collection.updateOne(
         { _id: new ObjectID(req.params.id) },
@@ -85,6 +100,7 @@ app.put('/collection/:collectionName/:id', (req, res, next) => {
     );
 });
 
+// DELETE method to remove a product (by its 'id')
 app.delete('/collection/:collectionName/:id', (req, res, next) => {
     req.collection.deleteOne({ _id: ObjectID(req.params.id) }, (e, result) => {
         if (e) return next(e);
