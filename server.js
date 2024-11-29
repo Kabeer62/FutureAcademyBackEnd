@@ -82,24 +82,30 @@ app.get('/collection/:collectionName/:id', (req, res, next) => {
 });
 
 // Updated POST route to prevent duplicate entries based on 'id'
+// app.post('/collection/:collectionName', (req, res, next) => {
+//     const newItem = req.body;
+
+//     // Check if an item with the same 'id' already exists
+//     req.collection.findOne({ id: newItem.id }, (err, existingItem) => {
+//         if (err) return next(err);
+
+//         if (existingItem) {
+//             return res.status(400).send({ msg: 'Item with this ID already exists' });
+//         }
+
+//         // If no duplicate, insert the new item
+//         req.collection.insertOne(newItem, (e, result) => {
+//             if (e) return next(e);
+//             res.send(result.ops);
+//         });
+//     });
+// });
 app.post('/collection/:collectionName', (req, res, next) => {
-    const newItem = req.body;
-
-    // Check if an item with the same 'id' already exists
-    req.collection.findOne({ id: newItem.id }, (err, existingItem) => {
-        if (err) return next(err);
-
-        if (existingItem) {
-            return res.status(400).send({ msg: 'Item with this ID already exists' });
-        }
-
-        // If no duplicate, insert the new item
-        req.collection.insertOne(newItem, (e, result) => {
-            if (e) return next(e);
-            res.send(result.ops);
-        });
-    });
-});
+    req.collection.insert(req.body, (e, results) => {
+    if (e) return next(e)
+    res.send(results.ops)
+    })
+    })
 
 // PUT method to update a product (by its 'id')
 app.put('/collection/:collectionName/:id', (req, res, next) => {
