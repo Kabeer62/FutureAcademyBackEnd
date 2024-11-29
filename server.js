@@ -2,10 +2,9 @@ const express = require('express');
 const MongoClient = require('mongodb').MongoClient;
 const ObjectID = require('mongodb').ObjectID;
 const path = require('path');
-const cors = require('cors');
+var fs = require("fs");
 
 const app = express();
-app.use(cors());
 app.use(express.json());
 app.set('port', 3000);
 
@@ -18,9 +17,39 @@ app.use((req, res, next) => {
     next();
 });
 
+app.use(function(req, res, next){
+    const method = req.method;
+    const url = req.url;
+    const timestamp = new Date();
+
+    console.log(`[${timestamp}] ${method} request to ${url}`); // Log request details
+
+    // Capture and log response status when the response is finished
+    res.on('finish', () => {
+        console.log(`[${timestamp}] Response status: ${res.statusCode}`);
+    });
+
+    next();
+})
+
 // Serve static files
 var imagePath = path.resolve(__dirname, "images");
 app.use('/images', express.static(imagePath));
+
+function logger(request, response, next) {
+    const method = request.method;
+    const url = request.url;
+    const timestamp = new Date();
+
+    console.log`(⁠ [${timestamp}] ${method} request to ${url} ⁠)`; // Log request details
+
+    // Capture and log response status when the response is finished
+    response.on('finish', () => {
+        console.log`(⁠ [${timestamp}] Response status: ${response.statusCode} ⁠)`;
+    });
+
+    next();
+}
 
 let db;
 
