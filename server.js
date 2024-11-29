@@ -36,21 +36,6 @@ app.use(function(req, res, next){
 var imagePath = path.resolve(__dirname, "images");
 app.use('/images', express.static(imagePath));
 
-function logger(request, response, next) {
-    const method = request.method;
-    const url = request.url;
-    const timestamp = new Date();
-
-    console.log`(⁠ [${timestamp}] ${method} request to ${url} ⁠)`; // Log request details
-
-    // Capture and log response status when the response is finished
-    response.on('finish', () => {
-        console.log`(⁠ [${timestamp}] Response status: ${response.statusCode} ⁠)`;
-    });
-
-    next();
-}
-
 let db;
 
 // Connect to MongoDB
