@@ -82,10 +82,15 @@ app.get('/collection/:collectionName/:id', (req, res, next) => {
 });
 
 // Updated POST route to prevent duplicate entries based on 'id'
+
 app.post('/collection/:collectionName', (req, res, next) => {
     const newItem = req.body;
 
-    // Check if an item with the same 'id' already exists
+    // Assign a unique ID if it doesn't exist
+    if (!newItem.id) {
+        newItem.id = uuidv4();
+    }
+
     req.collection.findOne({ id: newItem.id }, (err, existingItem) => {
         if (err) return next(err);
 
