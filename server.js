@@ -108,27 +108,41 @@ app.post('/collection/:collectionName', (req, res, next) => {
 
 // PUT method to update a product (by its 'id')
 app.put('/collection/:collectionName/:id', (req, res, next) => {
-    const collection = req.collection;
-    const productId = req.params.id;
+    const { ObjectID } = require('mongodb'); // Ensure ObjectID is required
+    const collectionName = req.params.collectionName;
+    const id = req.params.id;
 
-    // Ensure the ID is an ObjectID
-    const query = { _id: new ObjectID(productId) };
-    const update = { $set: req.body };
+    try {
+        // Convert `id` to ObjectID
+        const query = { _id: new ObjectID(id) };
+        const update = { $set: req.body };
 
-    collection.updateOne(query, update, { safe: true, multi: false }, (err, result) => {
-        if (err) return next(err);
+        req.collection.updateOne(query, update, { safe: true, multi: false }, (err, result) => {
+            if (err) {
+                console.error('Update error:', err);
+                return next(err);
+            }
 
-        res.send((result.result.n === 1) ? { msg: 'success' } : { msg: 'error' });
-    });
+            console.log('Update result:', result); // Log update result for debugging
+            if (result.matchedCount === 0) {
+                console.error('No document found with this ID:', id);
+            }
+
+            res.send((result.matchedCount === 1) ? { msg: 'success' } : { msg: 'error' });
+        });
+    } catch (error) {
+        console.error('Error in PUT route:', error);
+        next(error);
+    }
 });
 
 // DELETE method to remove a product (by its 'id')
-app.delete('/collection/:collectionName/:id', (req, res, next) => {
-    req.collection.deleteOne({ _id: ObjectID(req.params.id) }, (e, result) => {
-        if (e) return next(e);
-        res.send((result.result.n === 1) ? { msg: 'success' } : { msg: 'error' });
-    });
-});
+// app.delete('/collection/:collectionName/:id', (req, res, next) => {
+//     req.collection.deleteOne({ _id: ObjectID(req.params.id) }, (e, result) => {
+//         if (e) return next(e);
+//         res.send((result.result.n === 1) ? { msg: 'success' } : { msg: 'error' });
+//     });
+// });
 
 // Serve static content from back-end server
 app.use("/images", express.static(imagePath));
