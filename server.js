@@ -108,37 +108,18 @@ app.post('/collection/:collectionName', (req, res, next) => {
 
 // PUT method to update a product (by its 'id')
 app.put('/collection/:collectionName/:id', (req, res, next) => {
-    const productId = req.params.id; // Product ID from the URL
-    const updatedFields = req.body; // Fields to update from the request body
+    const collection = req.collection;
+    const productId = req.params.id;
 
-    // Ensure the collection is valid and connected
-    if (!req.collection) {
-        return res.status(500).send({ msg: "Database connection error" });
-    }
+    // Ensure the ID is an ObjectID
+    const query = { _id: new ObjectID(productId) };
+    const update = { $set: req.body };
 
-    // Validate the incoming data (e.g., ensure `availableInventory` is a non-negative integer)
-    if (updatedFields.availableInventory < 0) {
-        return res.status(400).send({ msg: "Invalid inventory value" });
-    }
+    collection.updateOne(query, update, { safe: true, multi: false }, (err, result) => {
+        if (err) return next(err);
 
-    req.collection.updateOne(
-        { _id: new ObjectId(productId) }, // Query to match the product by ID
-        { $set: updatedFields }, // Update the specified fields
-        { safe: true, multi: false }, // Update options
-        (err, result) => {
-            if (err) {
-                console.error("Error updating product:", err);
-                return next(err); // Pass the error to the next middleware
-            }
-
-            // Check if the update was successful
-            if (result.matchedCount === 0) {
-                return res.status(404).send({ msg: "Product not found" });
-            }
-
-            res.send({ msg: "success" }); // Respond with success
-        }
-    );
+        res.send((result.result.n === 1) ? { msg: 'success' } : { msg: 'error' });
+    });
 });
 
 // DELETE method to remove a product (by its 'id')
