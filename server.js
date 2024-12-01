@@ -135,30 +135,46 @@ app.put('/collection/:collectionName/:id', (req, res, next) => {
         next(error);
     }
 });
-
-app.get('/search/:collectionName', (request, response, next) => {
-    const searchTerm = request.query.q || ""; // Get the search term
+app.get('/search/products', (request, response, next) => {
+    const searchTerm = request.query.q || ""; // Get the search term from query parameters
     const searchRegex = new RegExp(searchTerm, "i"); // Case-insensitive regex for substring matching
 
-    const query = {
-        $or: [
-            { title: searchRegex },
-            { location: searchRegex },
-        ]
-    }
-    request.collection.find(query).toArray((err, results) => {
-        if (err) return next(err); // Handle errors
-        response.send(results);    // Send the filtered results
-    });
-})
+    // If no search term is provided, return all products
+    if (!searchTerm.trim()) {
+        request.collection.find({}).toArray((err, results) => {
+            if (err) return next(err); // Handle errors
+            response.send(results);    // Send the full list of products
+        });
+    } else {
+        const query = {
+            $or: [
+                { title: searchRegex },
+                { location: searchRegex },
+            ]
+        };
 
-// DELETE method to remove a product (by its 'id')
-// app.delete('/collection/:collectionName/:id', (req, res, next) => {
-//     req.collection.deleteOne({ _id: ObjectID(req.params.id) }, (e, result) => {
-//         if (e) return next(e);
-//         res.send((result.result.n === 1) ? { msg: 'success' } : { msg: 'error' });
+        request.collection.find(query).toArray((err, results) => {
+            if (err) return next(err); // Handle errors
+            response.send(results);    // Send the filtered results
+        });
+    }
+});
+
+// app.get('/search/:collectionName', (request, response, next) => {
+//     const searchTerm = request.query.q || ""; // Get the search term
+//     const searchRegex = new RegExp(searchTerm, "i"); // Case-insensitive regex for substring matching
+
+//     const query = {
+//         $or: [
+//             { title: searchRegex },
+//             { location: searchRegex },
+//         ]
+//     }
+//     request.collection.find(query).toArray((err, results) => {
+//         if (err) return next(err); // Handle errors
+//         response.send(results);    // Send the filtered results
 //     });
-// });
+// })
 
 // Serve static content from back-end server
 app.use("/images", express.static(imagePath));
