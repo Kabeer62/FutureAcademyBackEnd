@@ -160,22 +160,6 @@ app.get('/search/products', (request, response, next) => {
     }
 });
 
-// app.get('/search/:collectionName', (request, response, next) => {
-//     const searchTerm = request.query.q || ""; // Get the search term
-//     const searchRegex = new RegExp(searchTerm, "i"); // Case-insensitive regex for substring matching
-
-//     const query = {
-//         $or: [
-//             { title: searchRegex },
-//             { location: searchRegex },
-//         ]
-//     }
-//     request.collection.find(query).toArray((err, results) => {
-//         if (err) return next(err); // Handle errors
-//         response.send(results);    // Send the filtered results
-//     });
-// })
-
 // Serve static content from back-end server
 app.use("/images", express.static(imagePath));
 
