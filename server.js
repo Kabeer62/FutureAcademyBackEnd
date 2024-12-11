@@ -2,13 +2,14 @@ const express = require('express');
 const MongoClient = require('mongodb').MongoClient;
 const ObjectID = require('mongodb').ObjectID;
 const path = require('path');
+const { v4: uuidv4 } = require('uuid');
 var fs = require("fs");
 
 const app = express();
 app.use(express.json());
 app.set('port', 3000);
 
-// Set CORS headers
+// Set CORS(Cross-Origin Resource Sharing) headers
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader("Access-Control-Allow-Credentials", "true");
@@ -86,7 +87,6 @@ app.get('/collection/:collectionName/:id', (req, res, next) => {
 app.post('/collection/:collectionName', (req, res, next) => {
     const newItem = req.body;
 
-    // Assign a unique ID if it doesn't exist
     if (!newItem.id) {
         newItem.id = uuidv4();
     }
@@ -98,10 +98,13 @@ app.post('/collection/:collectionName', (req, res, next) => {
             return res.status(400).send({ msg: 'Item with this ID already exists' });
         }
 
-        // If no duplicate, insert the new item
-        req.collection.insertOne(newItem, (e, result) => {
-            if (e) return next(e);
-            res.send(result.ops);
+        req.collection.insertOne(newItem, (err, result) => {
+            if (err) return next(err);
+
+            res.status(201).send({
+                message: 'Item inserted successfully',
+                insertedId: result.insertedId,
+            });
         });
     });
 });
